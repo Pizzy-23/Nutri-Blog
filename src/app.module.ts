@@ -1,25 +1,27 @@
 import { Module } from '@nestjs/common';
-import { BlogModule } from './blog/blog.module';
-import { UploadController } from './config/upload.controller';
-import { AdminModule } from './admin/admin.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BlogModule } from './blog/blog.module';
+import { AdminModule } from './admin/admin.module';
+import { UploadController } from './config/upload.controller';
+import { AppDataSource } from './data-source';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
-      port: +process.env.DB_PORT,
+      port: parseInt(process.env.DB_PORT, 10),
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
-      migrations: ['src/migrations/*.ts'],
       synchronize: true,
-    }), BlogModule, AdminModule],
-
+    }),
+    BlogModule,
+    AdminModule,
+  ],
   controllers: [UploadController],
-  providers: [],
-
 })
 export class AppModule { }
