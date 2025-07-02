@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { Blog } from './entities/blog.entity';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogDto } from './dto/update-blog.dto';
@@ -10,15 +10,17 @@ export class BlogService {
   constructor(
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
+    @InjectEntityManager()
+    private entityManager: EntityManager
   ) { }
 
   async create(dto: CreateBlogDto): Promise<Blog> {
-    await this.blogRepository.update({ isActive: true }, { isActive: false });
-
-    const newPost = this.blogRepository.create({ ...dto, isActive: true });
-    return this.blogRepository.save(newPost);
+    return this.entityManager.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager.update(Blog, { isActive: true }, { isActive: false });
+      const newPost = transactionalEntityManager.create(Blog, { ...dto, isActive: true });
+      return transactionalEntityManager.save(newPost);
+    });
   }
-
   findAll(): Promise<Blog[]> {
     return this.blogRepository.find({ order: { createdAt: 'DESC' } });
   }
@@ -36,15 +38,16 @@ export class BlogService {
   }
 
   async repost(id: number): Promise<Blog> {
-    const post = await this.findOne(id);
-    if (!post) throw new NotFoundException('Post não encontrado');
+    return this.entityManager.transaction(async (transactionalEntityManager) => {
+      const post = await transactionalEntityManager.findOneBy(Blog, { id });
+      if (!post) throw new NotFoundException('Post não encontrado');
 
-    await this.blogRepository.update({ isActive: true }, { isActive: false });
+      await transactionalEntityManager.update(Blog, { isActive: true }, { isActive: false });
 
-    post.isActive = true;
-    return this.blogRepository.save(post);
+      post.isActive = true;
+      return transactionalEntityManager.save(post);
+    });
   }
-
   remove(id: number) {
     return this.blogRepository.delete(id);
   }
