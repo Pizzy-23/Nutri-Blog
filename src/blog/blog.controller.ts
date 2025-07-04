@@ -12,7 +12,6 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) { }
 
   @ApiOperation({ summary: 'Cria um novo post no blog' })
-  @ApiBearerAuth()
   @ApiResponse({
     status: 201,
     description: 'Post criado com sucesso',
@@ -21,6 +20,7 @@ export class BlogController {
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiBody({ type: CreateBlogDto })
   @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token')
   @Post()
   create(@Body() dto: CreateBlogDto) {
     return this.blogService.create(dto);
@@ -51,7 +51,7 @@ export class BlogController {
   }
 
   @ApiOperation({ summary: 'Atualiza um post existente' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiParam({ name: 'id', description: 'ID do post a ser atualizado', type: Number })
   @ApiBody({ type: UpdateBlogDto })
   @ApiResponse({
@@ -68,7 +68,7 @@ export class BlogController {
   }
 
   @ApiOperation({ summary: 'Republica um post (desativa todos os outros e ativa este)' })
-  @ApiBearerAuth()
+  @ApiBearerAuth('access-token')
   @ApiParam({ name: 'id', description: 'ID do post a ser republicado', type: Number })
   @ApiResponse({
     status: 200,

@@ -1,23 +1,35 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { DataSource } from 'typeorm';
-import { seedAdmin } from './admin/admin.seed';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
-    .setTitle('')
-    .setDescription('')
-    .setVersion('')
+    .setTitle('Nutri Karol API')
+    .setDescription('Documentação da API para o sistema da nutricionista Karol')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        description: `[just text field] Please enter token in following format: Bearer <JWT>`,
+        name: 'Authorization',
+        bearerFormat: 'JWT',
+        scheme: 'bearer',
+        type: 'http',
+        in: 'Header',
+      },
+      'access-token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  const dataSource = app.get(DataSource);
-  await seedAdmin(dataSource);
 
   await app.listen(3000);
 }
