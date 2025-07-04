@@ -1,3 +1,5 @@
+// src/admin/admin.module.ts
+
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AdminController } from './admin.controller';
@@ -22,5 +24,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
   ],
   controllers: [AdminController],
   providers: [AuthService, JwtStrategy, JwtAuthGuard],
+  exports: [AuthService, JwtStrategy, JwtAuthGuard, JwtModule],
 })
 export class AdminModule { }
