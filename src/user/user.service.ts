@@ -1,5 +1,8 @@
-// src/user/user.service.ts
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
@@ -13,8 +16,9 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<Omit<User, 'password'>> {
-    const existingUser = await this.userRepository.findOne({ where: { email: createUserDto.email } });
-
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
     if (existingUser) {
       throw new ConflictException('Um usuário com este e-mail já existe.');
     }
@@ -28,11 +32,13 @@ export class UserService {
 
   async findOne(id: number): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id } });
-
     if (!user) {
       throw new NotFoundException(`Usuário com ID #${id} não encontrado.`);
     }
-
     return user;
+  }
+
+  async findAll(): Promise<User[]> {
+    return this.userRepository.find();
   }
 }
