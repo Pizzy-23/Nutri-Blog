@@ -11,7 +11,7 @@ describe('RolesGuard', () => {
     reflector = new Reflector();
     guard = new RolesGuard(reflector);
   });
-  
+
   const mockExecutionContext = (user, requiredRoles?: UserRole[]) => {
     const mockContext = {
       getHandler: jest.fn(),
@@ -25,7 +25,7 @@ describe('RolesGuard', () => {
 
     return mockContext as unknown as ExecutionContext;
   };
-  
+
   it('should be defined', () => {
     expect(guard).toBeDefined();
   });
@@ -36,25 +36,37 @@ describe('RolesGuard', () => {
   });
 
   it('should allow access if user has the required role', () => {
-    const context = mockExecutionContext({ role: UserRole.NUTRI }, [UserRole.NUTRI]);
+    const context = mockExecutionContext({ role: UserRole.NUTRI }, [
+      UserRole.NUTRI,
+    ]);
     expect(guard.canActivate(context)).toBe(true);
   });
-  
+
   it('should deny access if user does not have the required role', () => {
-    const context = mockExecutionContext({ role: UserRole.DEFAULT }, [UserRole.NUTRI]);
+    const context = mockExecutionContext({ role: UserRole.DEFAULT }, [
+      UserRole.NUTRI,
+    ]);
     expect(guard.canActivate(context)).toBe(false);
   });
-  
+
   it('should deny access if user has no role property', () => {
-    const context = mockExecutionContext({ name: 'test-user' }, [UserRole.NUTRI]);
+    const context = mockExecutionContext({ name: 'test-user' }, [
+      UserRole.NUTRI,
+    ]);
     expect(guard.canActivate(context)).toBe(false);
   });
-  
+
   it('should handle multiple required roles correctly', () => {
-    const allowedContext = mockExecutionContext({ role: UserRole.DEFAULT }, [UserRole.NUTRI, UserRole.DEFAULT]);
+    const allowedContext = mockExecutionContext({ role: UserRole.DEFAULT }, [
+      UserRole.NUTRI,
+      UserRole.DEFAULT,
+    ]);
     expect(guard.canActivate(allowedContext)).toBe(true);
-    
-    const deniedContext = mockExecutionContext({ role: 'other_role' }, [UserRole.NUTRI, UserRole.DEFAULT]);
+
+    const deniedContext = mockExecutionContext({ role: 'other_role' }, [
+      UserRole.NUTRI,
+      UserRole.DEFAULT,
+    ]);
     expect(guard.canActivate(deniedContext)).toBe(false);
   });
 });

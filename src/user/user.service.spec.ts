@@ -44,7 +44,7 @@ describe('UserService', () => {
       password: 'password123',
       role: UserRole.DEFAULT,
     };
-    
+
     const savedUser = {
       id: 1,
       email: 'test@example.com',
@@ -59,7 +59,9 @@ describe('UserService', () => {
 
       const result = await service.create(createUserDto);
 
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { email: createUserDto.email } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { email: createUserDto.email },
+      });
       expect(mockUserRepository.save).toHaveBeenCalledWith(savedUser);
       expect(result).toEqual({
         id: savedUser.id,
@@ -70,30 +72,36 @@ describe('UserService', () => {
 
     it('should throw a ConflictException if email already exists', async () => {
       mockUserRepository.findOne.mockResolvedValue(savedUser);
-      await expect(service.create(createUserDto)).rejects.toThrow(ConflictException);
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        ConflictException,
+      );
       expect(mockUserRepository.save).not.toHaveBeenCalled();
     });
   });
 
   describe('findAll', () => {
     it('should return an array of users', async () => {
-      const userArray = [{ id: 1, email: 'user1@test.com', role: UserRole.DEFAULT }];
+      const userArray = [
+        { id: 1, email: 'user1@test.com', role: UserRole.DEFAULT },
+      ];
       mockUserRepository.find.mockResolvedValue(userArray);
       const result = await service.findAll();
       expect(result).toEqual(userArray);
       expect(mockUserRepository.find).toHaveBeenCalled();
     });
   });
-  
+
   describe('findOne', () => {
     it('should find and return a user by ID', async () => {
       const user = { id: 1, email: 'user@test.com', role: UserRole.DEFAULT };
       mockUserRepository.findOne.mockResolvedValue(user);
       const result = await service.findOne(1);
       expect(result).toEqual(user);
-      expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: 1 } });
+      expect(mockUserRepository.findOne).toHaveBeenCalledWith({
+        where: { id: 1 },
+      });
     });
-    
+
     it('should throw NotFoundException if user is not found', async () => {
       mockUserRepository.findOne.mockResolvedValue(null);
       await expect(service.findOne(99)).rejects.toThrow(NotFoundException);

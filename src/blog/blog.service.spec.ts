@@ -1,10 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { BlogService } from './blog.service';
 import { Blog } from './entities/blog.entity';
 import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
 import { NotFoundException } from '@nestjs/common';
 
 const mockBlogRepository = {
@@ -29,7 +28,7 @@ const mockEntityManager = {
 
 describe('BlogService', () => {
   let service: BlogService;
-  let entityManager: EntityManager; // <<< Declarar aqui
+  let entityManager: EntityManager;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -41,14 +40,10 @@ describe('BlogService', () => {
     }).compile();
 
     service = module.get<BlogService>(BlogService);
-    entityManager = module.get<EntityManager>(EntityManager); // <<< INICIALIZAR AQUI, DENTRO DO beforeEach
+    entityManager = module.get<EntityManager>(EntityManager);
     jest.clearAllMocks();
   });
 
-  // NENHUMA MUDANÇA NECESSÁRIA NOS TESTES 'create', 'findAll', 'findOne', 'update', 'repost'
-  // ... (Cole os testes de create até repost da resposta anterior) ...
-
-  // Testes de 'create'
   describe('create', () => {
     it('should deactivate all posts and create a new active one', async () => {
       const createDto: CreateBlogDto = {
@@ -72,7 +67,6 @@ describe('BlogService', () => {
     });
   });
 
-  // Testes de 'findAll'
   describe('findAll', () => {
     it('should return an array of blogs', async () => {
       mockBlogRepository.find.mockResolvedValue([{}]);
@@ -81,7 +75,6 @@ describe('BlogService', () => {
     });
   });
 
-  // Testes de 'findOne'
   describe('findOne', () => {
     it('should find and return a blog', async () => {
       mockBlogRepository.findOneBy.mockResolvedValue({ id: 1 });
@@ -95,7 +88,6 @@ describe('BlogService', () => {
     });
   });
 
-  // Testes de 'update'
   describe('update', () => {
     it('should update a blog post', async () => {
       mockBlogRepository.findOneBy.mockResolvedValue({ id: 1 });
@@ -130,15 +122,12 @@ describe('BlogService', () => {
     it('should delete the blog post', async () => {
       mockBlogRepository.findOneBy.mockResolvedValue({ id: 1 });
       mockBlogRepository.delete.mockResolvedValue({ affected: 1 });
-
-      // Aqui testamos o método remove que você irá adicionar ao seu serviço
       await expect(service.remove(1)).resolves.not.toThrow();
       expect(mockBlogRepository.delete).toHaveBeenCalledWith(1);
     });
 
     it('should throw NotFoundException if post to remove is not found', async () => {
       mockBlogRepository.findOneBy.mockResolvedValue(null);
-      // Aqui testamos se ele lança um erro quando não encontra o post a ser deletado
       await expect(service.remove(999)).rejects.toThrow(NotFoundException);
     });
   });
