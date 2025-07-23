@@ -11,24 +11,36 @@ export class BlogService {
     @InjectRepository(Blog)
     private blogRepository: Repository<Blog>,
     @InjectEntityManager()
-    private entityManager: EntityManager
-  ) { }
+    private entityManager: EntityManager,
+  ) {}
 
   async create(dto: CreateBlogDto): Promise<Blog> {
-    return this.entityManager.transaction(async (transactionalEntityManager) => {
-      await transactionalEntityManager.update(Blog, { isActive: true }, { isActive: false });
-      const newPost = transactionalEntityManager.create(Blog, { ...dto, isActive: true });
-      return transactionalEntityManager.save(newPost);
-    });
+    return this.entityManager.transaction(
+      async (transactionalEntityManager) => {
+        await transactionalEntityManager.update(
+          Blog,
+          { isActive: true },
+          { isActive: false },
+        );
+        const newPost = transactionalEntityManager.create(Blog, {
+          ...dto,
+          isActive: true,
+        });
+        return transactionalEntityManager.save(newPost);
+      },
+    );
   }
   findAll(): Promise<Blog[]> {
     return this.blogRepository.find({ order: { createdAt: 'DESC' } });
   }
 
-  findOne(id: number): Promise<Blog> {
-    return this.blogRepository.findOneBy({ id });
+  async findOne(id: number): Promise<Blog> {
+    const blog = await this.blogRepository.findOneBy({ id });
+    if (!blog) {
+      throw new NotFoundException(`Blog com ID #${id} não encontrado.`);
+    }
+    return blog;
   }
-
   async update(id: number, dto: UpdateBlogDto): Promise<Blog> {
     const post = await this.findOne(id);
     if (!post) throw new NotFoundException('Post não encontrado');
@@ -38,17 +50,16 @@ export class BlogService {
   }
 
   async repost(id: number): Promise<Blog> {
-    return this.entityManager.transaction(async (transactionalEntityManager) => {
-      const post = await transactionalEntityManager.findOneBy(Blog, { id });
-      if (!post) throw new NotFoundException('Post não encontrado');
+    const postToRepost = await this.findOne(id);
 
-      await transactionalEntityManager.update(Blog, { isActive: true }, { isActive: false });
-
-      post.isActive = true;
-      return transactionalEntityManager.save(post);
+    return this.entityManager.transaction(async (manager) => {
+      await manager.update(Blog, { isActive: true }, { isActive: false });
+      postToRepost.isActive = true;
+      return manager.save(postToRepost); 
     });
   }
-  remove(id: number) {
-    return this.blogRepository.delete(id);
-  }
+  async remove(id: number): Promise<void> {
+  await this.findOne(id); 
+  await this.blogRepository.delete(id);
+}
 }
