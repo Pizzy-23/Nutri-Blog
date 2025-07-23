@@ -5,6 +5,7 @@ import { BlogModule } from './blog/blog.module';
 import { AdminModule } from './admin/admin.module';
 import { UploadController } from './config/upload.controller';
 import { AppDataSource } from './data-source';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AppDataSource } from './data-source';
     }),
     BlogModule,
     AdminModule,
+    UserModule,
   ],
   controllers: [UploadController],
 })
